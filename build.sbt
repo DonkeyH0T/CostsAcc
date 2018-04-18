@@ -36,3 +36,10 @@ libraryDependencies += "org.scalamock" %% "scalamock" % "4.1.0" % Test
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.5"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
+
+libraryDependencies ++= Seq(
+  "org.scalikejdbc" %% "scalikejdbc"                  % "3.2.3",
+  "org.scalikejdbc" %% "scalikejdbc-config"           % "3.2.3",
+  "mysql"           %  "mysql-connector-java"         % "5.1.46",
+  "ch.qos.logback"  %  "logback-classic"              % "1.2.3"
+)
