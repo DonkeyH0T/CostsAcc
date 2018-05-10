@@ -8,26 +8,25 @@ sealed trait Request{
 
 object Request {
 
-  case class AddUser(name: String, pass: String) extends Request {
+  case class AddUser(name: String, pass: String, currentUser: Option[User]) extends Request {
     def withUser(user:User): AddUser = copy(currentUser = Some(user))
   }
 
-  case class AddExpense(name: String, pass: String, exp: Data, currentUser: Option[User]) extends Request {
+  case class AddExpense(exp: Data, currentUser: Option[User]) extends Request {
     def withUser(user:User): AddExpense = copy(currentUser = Some(user))
   }
 
-  case class WithDate(name: String, pass: String, dateFrom: LocalDate,
-                      dateTo: LocalDate, currentUser: Option[User]) extends Request {
+  case class WithDate(dateFrom: LocalDate, dateTo: LocalDate, currentUser: Option[User]) extends Request {
     def withUser(user:User): WithDate = copy(currentUser = Some(user))
   }
 
-  case class WithDateShop(name: String, pass: String, dateFrom: LocalDate,
-                          dateTo: LocalDate, shop: String, currentUser: Option[User]) extends Request{
+  case class WithDateShop(dateFrom: LocalDate, dateTo: LocalDate, shop: String,
+                          currentUser: Option[User]) extends Request{
     def withUser(user:User): WithDateShop = copy(currentUser = Some(user))
   }
 
-  case class WithCategory(name: String, pass: String, dateFrom: LocalDate,
-                          dateTo: LocalDate, category: String, currentUser: Option[User]) extends Request{
+  case class WithCategory(dateFrom: LocalDate, dateTo: LocalDate, category: String,
+                          currentUser: Option[User]) extends Request{
     def withUser(user:User): WithCategory = copy(currentUser = Some(user))
   }
 
