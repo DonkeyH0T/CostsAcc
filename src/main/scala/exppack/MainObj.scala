@@ -16,8 +16,7 @@ object MainObj extends App{
   val f = for {
     a <- x(AddUser("aa","bb",None))
     b <- x(AddUser("aa","bb",None))
-    c <- z("aa","bb", Remind(None))
-  } yield {println(a,b,c)}
+  } yield {println(a,b)}
 
   Await.ready(f, Duration.Inf)
 
