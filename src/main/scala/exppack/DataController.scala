@@ -6,7 +6,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class AddDataController(implicit repository: DataRepository) extends Controller[Request, Boolean] {
 
   override def apply(request: Request): Future[Boolean] = request match {
-    case Request.AddExpense(_, _, item, user) => repository.put(item.withUser(user)).map(_ => true)
+    case Request.AddExpense(item, user) => repository.put(item.withUser(user)).map(_ => true)
       .recover {
         case _: Exception => false
       }
@@ -16,12 +16,12 @@ class AddDataController(implicit repository: DataRepository) extends Controller[
 class GetStatController(implicit repository: DataRepository) extends Controller[Request, BigDecimal] {
 
   override def apply(request: Request): Future[BigDecimal] = request match {
-    case Request.WithDateShop(_, _, dateFrom, dateTo, shop, user) => user match {
+    case Request.WithDateShop(dateFrom, dateTo, shop, user) => user match {
       case Some(u) =>
         repository.SumByShop(dateFrom, dateTo, shop, u)
     }
 
-    case Request.WithCategory(_, _, dateFrom, dateTo, category, user) => user match {
+    case Request.WithCategory(dateFrom, dateTo, category, user) => user match {
       case Some(u) =>
         repository.SumByCategory(dateFrom, dateTo, category, u)
     }
@@ -30,7 +30,7 @@ class GetStatController(implicit repository: DataRepository) extends Controller[
 
 class DetailedStatController(implicit repository: DataRepository) extends Controller[Request, Seq[Sample]] {
   override def apply(request: Request): Future[Seq[Sample]] = request match {
-    case Request.WithDate(_, _, dateFrom, dateTo, user) => ???
+    case Request.WithDate(dateFrom, dateTo, user) =>
   }
 }
 

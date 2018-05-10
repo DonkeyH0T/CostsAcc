@@ -18,6 +18,6 @@ case class Data(date: LocalDate,
   }
 }
 
-case class Sample(monthYear: (Month, Year), category: String, sum: BigDecimal)
+case class Sample(monthYear: (Month, Year), category: Option[String], sum: BigDecimal)
 
 case class RegSample(data: LocalDate, category: String, sum: Double)

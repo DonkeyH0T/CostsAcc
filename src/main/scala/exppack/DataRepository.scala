@@ -1,6 +1,6 @@
 package exppack
 
-import java.time.LocalDate
+import java.time.{LocalDate, Year}
 
 import scala.concurrent.{ExecutionContext, Future}
 import java.util.concurrent.ConcurrentHashMap
@@ -59,9 +59,14 @@ final class DataRepositoryClass(implicit ec: ExecutionContext) extends DataRepos
   }
 
   override def StatByDate(dateFrom: LocalDate, dateTo: LocalDate, user: User): Future[Seq[Sample]] ={
-    ???
-  //  all().map(x => x.filter(y => isWithinRange(dateFrom,dateTo, y.date) &&
-  //    y.userId == Some(user.id)).map(x => Sample(x.date.getMonth,x.category,BigDecimal(0))))
+    all().map { _
+      .filter(y => isWithinRange(dateFrom,dateTo, y.date) && y.userId.contains(user.id))
+      .sortBy(_.date)
+      .map(x => Sample((x.date.getMonth,Year.of(x.date.getYear)),x.category,BigDecimal(x.cost)))
+      .groupBy(x => (x.monthYear,x.category))
+      .map {case ((monthYear, category), samples) => Sample(monthYear, category, samples.map(_.sum).sum)}
+      .toSeq
+    }
   }
 
 }
