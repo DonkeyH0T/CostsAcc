@@ -6,6 +6,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
+import exppack.domain.User
+
 import scala.collection.JavaConverters._
 
 class UserRegistrationException(msg: String) extends Exception(msg)

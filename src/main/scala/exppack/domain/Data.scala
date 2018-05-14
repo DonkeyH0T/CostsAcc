@@ -1,4 +1,4 @@
-package exppack
+package exppack.domain
 
 import java.time.{LocalDate, Month, Year}
 

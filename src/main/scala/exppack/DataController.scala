@@ -1,5 +1,7 @@
 package exppack
 
+import exppack.domain.{RegSample, Sample}
+
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 

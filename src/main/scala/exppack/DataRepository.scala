@@ -6,6 +6,9 @@ import scala.concurrent.{ExecutionContext, Future}
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import java.time.Period
+
+import exppack.domain.{Data, RegSample, Sample, User}
+
 import scala.collection.JavaConverters._
 
 

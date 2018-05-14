@@ -3,9 +3,9 @@ package exppack.api
 import akka.http.scaladsl.model.DateTime
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive1, Route}
-import exppack.{AddUserController, MaybeUser, UserRepository}
+import exppack.{AddUserController, UserRepository}
 import exppack.api.CustomUnmarshaller._
-import exppack.domain.Period
+import exppack.domain.{MaybeUser, Period}
 import org.json4s.{DefaultFormats, jackson}
 import org.json4s.jackson.Serialization
 

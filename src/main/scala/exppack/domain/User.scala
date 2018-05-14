@@ -1,4 +1,4 @@
-package exppack
+package exppack.domain
 
 case class User(id: Int, name: String, pass: String)
 

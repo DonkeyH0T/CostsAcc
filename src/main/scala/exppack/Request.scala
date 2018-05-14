@@ -2,6 +2,8 @@ package exppack
 
 import java.time.LocalDate
 
+import exppack.domain.{Data, User}
+
 sealed trait Request{
   def withUser(user:User): Request
 }
