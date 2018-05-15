@@ -4,7 +4,8 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class UserController(implicit repository: UserRepository) extends Controller3[String, String, Request, Request] {
-  override def apply(login: String, pass: String, request: Request): Future[Request] = repository.userAuth(login, pass).map(request.withUser)
+  override def apply(login: String, pass: String, request: Request): Future[Request] =
+    repository.userAuth(login, pass).map(request.withUser)
 }
 
 class AddUserController(implicit repository: UserRepository) extends Controller[Request, Boolean] {
