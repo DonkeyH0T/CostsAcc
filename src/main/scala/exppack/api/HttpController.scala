@@ -3,28 +3,35 @@ package exppack.api
 import akka.http.scaladsl.model.DateTime
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive1, Route}
-import exppack.{AddUserController, UserRepository}
+import exppack.{AddUserController, DataRepository, Request, UserRepository}
 import exppack.api.CustomUnmarshaller._
-import exppack.domain.{MaybeUser, Period}
+import exppack.domain.{Buy, MaybeUser, Period}
 import org.json4s.{DefaultFormats, jackson}
 import org.json4s.jackson.Serialization
 
 import scala.concurrent.ExecutionContext
 
-class HttpController {
+class HttpController(implicit val userRepository: UserRepository, implicit val dataRepository: DataRepository) {
   implicit val format: DefaultFormats.type = DefaultFormats
   implicit val serialization: Serialization.type = jackson.Serialization
-  implicit val userRepository: UserRepository
 
-  val withPeriod = parameters('from.as(toDateTime), 'to.as(toDateTime)).as(Period)
+  val withPeriod: Directive1[Period] = parameters('from.as(toDateTime), 'to.as(toDateTime)).as(Period)
   val withUser: Directive1[MaybeUser] = parameters('login, 'password).as(MaybeUser)
+  val withBuy: Directive1[Buy] = parameters(
+    'date.as(toDateTime),
+    'sum.as(toBigDecimal),
+    'category.as(toCategory)?,
+    'shop.as(toShop)?,
+    'nextpayment.as(toDateTime)?
+  ).as(Buy)
 
   val routes: Route = pathPrefix("api") {
     pathPrefix("user") {
       pathPrefix("register") {
         withUser { maybeUser: MaybeUser =>
           get {
-            complete(???)
+            // TODO: починить AddUserController!
+            complete(AddUserController(userRepository)(Request.AddUser(maybeUser.name, maybeUser.pass, None)))
           }
         }
       } ~
@@ -37,8 +44,7 @@ class HttpController {
         }
     } ~ pathPrefix("expence") {
       withUser { maybeUser: MaybeUser =>
-        parameters('date.as(toDateTime), 'sum.as(toBigDecimal), 'category?, 'shop?, 'nextpayment?) {
-          (date:DateTime, sum:BigDecimal, category:Option[String], shop:Option[String], nextpayment:Option[String]) =>
+        withBuy { buy: Buy =>
             post {
               complete(???)
             }
