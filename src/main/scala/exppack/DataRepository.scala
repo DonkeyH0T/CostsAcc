@@ -1,71 +1,94 @@
 package exppack
 
-import java.time.{LocalDate, Year}
-
+import org.joda.time._
 import scala.concurrent.{ExecutionContext, Future}
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
 import scala.collection.JavaConverters._
 
+object DataService {
 
-
-
-trait DataService {
-  def nextDataId: Int
-  def isWithinRange(dateFrom: LocalDate,dateTo: LocalDate, date: LocalDate): Boolean
-}
-
-trait DataServiceImpl extends DataService {
   val idData: AtomicInteger = new AtomicInteger(0)
   def nextDataId: Int = idData.incrementAndGet
-  override def isWithinRange(dateFrom: LocalDate,dateTo: LocalDate, date: LocalDate): Boolean = {
+
+  def isWithinRange(dateFrom: DateTime, dateTo: DateTime, date: DateTime): Boolean = {
     !(date.isBefore(dateFrom) || date.isAfter(dateTo))
   }
+
+  implicit val orderingLocalDate: Ordering[DateTime] = Ordering.by(d => (d.getYear, d.getDayOfYear, d.getSecondOfDay))
 }
 
 trait DataRepositoryUtils {
-  this : Repository[Int, Data] =>
-  def SumByCategory(dateFrom: LocalDate, dateTo: LocalDate, category: String, user: User): Future[BigDecimal]
-  def SumByShop(dateFrom: LocalDate, dateTo: LocalDate, shop: String, user: User): Future[BigDecimal]
-  def StatByDate(dateFrom: LocalDate, dateTo: LocalDate, user: User): Future[Seq[Sample]]
-  }
+  this: Repository[Int, Data] =>
+  def sumByCategory(dateFrom: DateTime, dateTo: DateTime, category: String, user: User): Future[BigDecimal]
+
+  def sumByShop(dateFrom: DateTime, dateTo: DateTime, shop: String, user: User): Future[BigDecimal]
+
+  def statByDate(dateFrom: DateTime, dateTo: DateTime, user: User): Future[Seq[Sample]]
+
+  def getRemind(user: User): Future[Seq[RegSample]]
+}
 
 trait DataRepository extends Repository[Int, Data] with DataRepositoryUtils
 
-final class DataRepositoryClass(implicit ec: ExecutionContext) extends DataRepository with DataServiceImpl {
+final class MemoryDataRepository(implicit ec: ExecutionContext) extends DataRepository {
+
+  import DataService._
 
   private[this] val storage = new ConcurrentHashMap[Int, Data]()
 
   override def put(item: Data): Future[Unit] = Future {
-    val itemWithId = item.copy(id = Some(nextDataId))
-    itemWithId.id match {
-      case Some(i) => storage.put(i, itemWithId)
-    }
+    val dataId = nextDataId
+    val itemWithId = item.copy(id = Some(dataId))
+    storage.put(dataId, itemWithId)
   }
 
   override def all(): Future[Seq[Data]] = Future {
     storage.values().asScala.toSeq
   }
 
-  override def SumByCategory(dateFrom: LocalDate, dateTo: LocalDate, category: String, user: User): Future[BigDecimal] ={
-    all().map(x => x.filter(y => isWithinRange(dateFrom,dateTo, y.date) && y.category==Some(category) &&
-      y.userId == Some(user.id)).map(x => BigDecimal(x.cost)).sum)
+  override def sumByCategory(dateFrom: DateTime, dateTo: DateTime, category: String, user: User): Future[BigDecimal] = {
+    all().map(x => x.filter(y => isWithinRange(dateFrom, dateTo, y.date) && y.category.contains(category) &&
+      y.userId.contains(user.id)).map(x => BigDecimal(x.cost)).sum)
   }
 
-  override def SumByShop(dateFrom: LocalDate, dateTo: LocalDate, shop: String, user: User): Future[BigDecimal] ={
-    all().map(x => x.filter(y => isWithinRange(dateFrom,dateTo, y.date) && y.shop==Some(shop) &&
-      y.userId == Some(user.id)).map(x => BigDecimal(x.cost)).sum)
+  override def sumByShop(dateFrom: DateTime, dateTo: DateTime, shop: String, user: User): Future[BigDecimal] = {
+    all().map(x => x.filter(y => isWithinRange(dateFrom, dateTo, y.date) && y.shop.contains(shop) &&
+      y.userId.contains(user.id)).map(x => BigDecimal(x.cost)).sum)
   }
 
-  override def StatByDate(dateFrom: LocalDate, dateTo: LocalDate, user: User): Future[Seq[Sample]] ={
-    all().map { _
-      .filter(y => isWithinRange(dateFrom,dateTo, y.date) && y.userId.contains(user.id))
-      .sortBy(_.date)
-      .map(x => Sample((x.date.getMonth,Year.of(x.date.getYear)),x.category,BigDecimal(x.cost)))
-      .groupBy(x => (x.monthYear,x.category))
-      .map {case ((monthYear, category), samples) => Sample(monthYear, category, samples.map(_.sum).sum)}
-      .toSeq
+  override def statByDate(dateFrom: DateTime, dateTo: DateTime, user: User): Future[Seq[Sample]] = {
+    all().map {
+      _.filter(y => isWithinRange(dateFrom, dateTo, y.date) && y.userId.contains(user.id))
+        .sortBy(_.date)
+        .map(x => Sample(new YearMonth(x.date.getYear, x.date.getMonthOfYear).toString, x.category, BigDecimal(x.cost)))
+        .groupBy(x => (x.yearMonth, x.category))
+        .map { case ((monthYear, category), samples) => Sample(monthYear, category, samples.map(_.sum).sum) }
+        .toSeq
+    }
+  }
+
+  override def getRemind(user: User): Future[Seq[RegSample]] = {
+    all().map {
+      _.filter(y => y.userId.contains(user.id) && y.nextPayment.isDefined && y.category.isDefined)
+        .sortBy(_.nextPayment)
+        .groupBy(_.category)
+        .filter { case (Some(category), data) =>
+          val last = data.last
+          last.nextPayment match {
+            case Some(x)
+              if Days.daysBetween(x.toLocalDate, LocalDate.now()).getDays >= -5 => true
+            case _ => false
+          }
+        }.map { case (Some(category), data) =>
+        val last = data.last
+        last.nextPayment match {
+          case Some(x)
+            if Days.daysBetween(x.toLocalDate, LocalDate.now()).getDays >= -5 =>
+            RegSample(x, category, last.cost)
+        }
+      }.toSeq
     }
   }
 

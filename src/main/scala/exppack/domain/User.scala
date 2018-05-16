@@ -1,3 +1,3 @@
-package exppack.domain
+package exppack
 
-case class User(name: String, pass: String,id: Option[Int]= None)
+case class User(id: Int, name: String, pass: String)
