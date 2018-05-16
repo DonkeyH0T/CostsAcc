@@ -1,11 +1,13 @@
-package exppack
+package exppack.repository
 
-import org.joda.time._
-import scala.concurrent.{ExecutionContext, Future}
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
+import exppack.domain._
+import org.joda.time._
+
 import scala.collection.JavaConverters._
+import scala.concurrent.{ExecutionContext, Future}
 
 object DataService {
 
@@ -39,10 +41,11 @@ final class MemoryDataRepository(implicit ec: ExecutionContext) extends DataRepo
 
   private[this] val storage = new ConcurrentHashMap[Int, Data]()
 
-  override def put(item: Data): Future[Unit] = Future {
+  override def put(item: Data): Future[Data] = Future {
     val dataId = nextDataId
     val itemWithId = item.copy(id = Some(dataId))
     storage.put(dataId, itemWithId)
+    itemWithId
   }
 
   override def all(): Future[Seq[Data]] = Future {
@@ -51,19 +54,19 @@ final class MemoryDataRepository(implicit ec: ExecutionContext) extends DataRepo
 
   override def sumByCategory(dateFrom: DateTime, dateTo: DateTime, category: String, user: User): Future[BigDecimal] = {
     all().map(x => x.filter(y => isWithinRange(dateFrom, dateTo, y.date) && y.category.contains(category) &&
-      y.userId.contains(user.id)).map(x => BigDecimal(x.cost)).sum)
+      y.userId==user.id).map(_.cost).sum)
   }
 
   override def sumByShop(dateFrom: DateTime, dateTo: DateTime, shop: String, user: User): Future[BigDecimal] = {
     all().map(x => x.filter(y => isWithinRange(dateFrom, dateTo, y.date) && y.shop.contains(shop) &&
-      y.userId.contains(user.id)).map(x => BigDecimal(x.cost)).sum)
+      y.userId==user.id).map(_.cost).sum)
   }
 
   override def statByDate(dateFrom: DateTime, dateTo: DateTime, user: User): Future[Seq[Sample]] = {
     all().map {
-      _.filter(y => isWithinRange(dateFrom, dateTo, y.date) && y.userId.contains(user.id))
+      _.filter(y => isWithinRange(dateFrom, dateTo, y.date) && y.userId==user.id)
         .sortBy(_.date)
-        .map(x => Sample(new YearMonth(x.date.getYear, x.date.getMonthOfYear).toString, x.category, BigDecimal(x.cost)))
+        .map(x => Sample(new YearMonth(x.date.getYear, x.date.getMonthOfYear).toString, x.category, x.cost))
         .groupBy(x => (x.yearMonth, x.category))
         .map { case ((monthYear, category), samples) => Sample(monthYear, category, samples.map(_.sum).sum) }
         .toSeq
@@ -72,7 +75,7 @@ final class MemoryDataRepository(implicit ec: ExecutionContext) extends DataRepo
 
   override def getRemind(user: User): Future[Seq[RegSample]] = {
     all().map {
-      _.filter(y => y.userId.contains(user.id) && y.nextPayment.isDefined && y.category.isDefined)
+      _.filter(y => y.userId==user.id && y.nextPayment.isDefined && y.category.isDefined)
         .sortBy(_.nextPayment)
         .groupBy(_.category)
         .filter { case (Some(category), data) =>

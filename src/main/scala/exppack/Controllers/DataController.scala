@@ -1,4 +1,7 @@
-package exppack
+package exppack.Controllers
+
+import exppack.repository.DataRepository
+import exppack.domain.{Request, _}
 
 import scala.concurrent.{ExecutionContext, Future}
 class UserNotFoundException(msg: String) extends Exception(msg)

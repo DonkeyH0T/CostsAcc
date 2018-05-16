@@ -1,17 +1,20 @@
-package exppack
+package exppack.repository
 
-import scala.concurrent.{ExecutionContext, Future}
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
+import exppack.domain._
+
 import scala.collection.JavaConverters._
+import scala.concurrent.{ExecutionContext, Future}
 
 class UserRegistrationException(msg: String) extends Exception(msg)
 class UserAuthenticationException(msg: String) extends Exception(msg)
 
 trait UserRepositoryUtils {
-  def checkAndSave(name: String, pass: String): Future[User]
-  def userAuth(name: String, pass: String): Future[User]
+  this: Repository[Int, User] =>
+
+  def userAuth(user: User): Future[User]
 }
 
 trait UserService {
@@ -29,23 +32,20 @@ final class MemoryUserRepository(implicit ec: ExecutionContext) extends UserRepo
 
   private[this] val storage = new ConcurrentHashMap[Int, User]()
 
-  override def put(item: User): Future[Unit] = Future {
-    storage.put(item.id, item)
-  }
-
   override def all(): Future[Seq[User]] = Future {
     storage.values().asScala.toSeq
   }
 
-  override def checkAndSave(name: String, pass: String): Future[User] = all().map(x => x.filter(_.name == name)).flatMap {
+  override def put(item: User): Future[User] = all().map(x => x.filter(_.name == item.name)).flatMap {
     case Seq() =>
-      val newUser = User(nextUserId, name, pass)
-      put(newUser)
+      val id = nextUserId
+      val newUser = item.copy(id = Some(id))
+      storage.put(id, newUser)
       Future.successful(newUser)
     case Seq(_) => Future.failed(new UserRegistrationException("user with provided name already exists"))
   }
 
-  override def userAuth(name: String, pass: String): Future[User] = all().map(x => x.filter(y => y.name == name && y.pass == pass)).flatMap {
+  override def userAuth(user: User): Future[User] = all().map(x => x.filter(y => y.name == user.name && y.pass == user.pass)).flatMap {
     case Seq() => Future.failed(new UserAuthenticationException("invalid username or password"))
     case s @ Seq(_) => Future.successful(s.head)
   }

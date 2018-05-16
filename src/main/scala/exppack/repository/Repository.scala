@@ -1,10 +1,11 @@
-package exppack
+package exppack.repository
+
 import scala.concurrent.Future
 
 
 trait Repository[ID, T] {
 
-  def put(item: T): Future[Unit]
+  def put(item: T): Future[T]
 
   def all(): Future[Seq[T]]
 

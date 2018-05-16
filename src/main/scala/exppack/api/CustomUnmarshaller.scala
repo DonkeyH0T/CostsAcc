@@ -5,7 +5,7 @@ import akka.http.scaladsl.unmarshalling.Unmarshaller
 import exppack.domain.{Category, Shop}
 
 import scala.concurrent.Future
-
+/*
 object CustomUnmarshaller {
   val toDateTime: Unmarshaller[String, DateTime] = Unmarshaller.apply[String, DateTime] {
     DateTime.fromIsoDateTimeString(_).andThen {
@@ -24,3 +24,4 @@ object CustomUnmarshaller {
   }
 
 }
+*/

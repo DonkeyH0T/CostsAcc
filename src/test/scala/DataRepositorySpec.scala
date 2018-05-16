@@ -1,4 +1,6 @@
+import exppack.repository.MemoryDataRepository
 import exppack._
+import exppack.domain.{Data, RegSample, Sample, User}
 import org.scalatest.{FlatSpec, Matchers}
 import org.scalatest.concurrent.ScalaFutures
 import org.joda.time.{DateTime, LocalDate}
@@ -14,7 +16,9 @@ class DataRepositorySpec extends FlatSpec with Matchers with ScalaFutures {
   }
 
   "MemoryDataRepository" should "store item" in new Context {
-    rep.put(Data(DateTime.now(), 100, Some("food"), Some("Prisma"))).futureValue shouldBe()
+    val date = DateTime.now()
+    rep.put(Data(date, 100, Some("food"), Some("Prisma"))).futureValue shouldBe
+      Data( date ,100,Some("food"),Some("Prisma"),None,Some(1),None)
   }
 
   "MemoryDataRepository" should "return all items" in new Context {
@@ -38,7 +42,7 @@ class DataRepositorySpec extends FlatSpec with Matchers with ScalaFutures {
       _ <- rep.put(Data(new DateTime("2018-04-15T00:00:00.000+03:00"), 600,
         Some("food"), Some("okay"), None, None, Some(1)))
       sum <- rep.sumByCategory(new DateTime("2016-03-15T00:00:00.000+03:00"),
-        new DateTime("2018-05-15T00:00:00.000+03:00"), "food", User(1, "vasyaSPB", "qwerty"))
+        new DateTime("2018-05-15T00:00:00.000+03:00"), "food", User("vasyaSPB", "qwerty", Some(1)))
     } yield sum
     f.futureValue shouldBe 900
   }
@@ -52,7 +56,7 @@ class DataRepositorySpec extends FlatSpec with Matchers with ScalaFutures {
       _ <- rep.put(Data(new DateTime("2018-04-15T00:00:00.000+03:00"), 600,
         Some("food"), Some("okay"), None, None, Some(1)))
       sum <- rep.sumByCategory(new DateTime("2016-03-15T00:00:00.000+03:00"),
-        new DateTime("2018-05-15T00:00:00.000+03:00"), "cinema", User(1, "vasyaSPB", "qwerty"))
+        new DateTime("2018-05-15T00:00:00.000+03:00"), "cinema", User("vasyaSPB", "qwerty",Some(1)))
     } yield sum
     f.futureValue shouldBe 0
   }
@@ -66,7 +70,7 @@ class DataRepositorySpec extends FlatSpec with Matchers with ScalaFutures {
       _ <- rep.put(Data(new DateTime("2018-04-15T00:00:00.000+03:00"), 600,
         Some("food"), Some("prisma"), None, None, Some(1)))
       sum <- rep.sumByShop(new DateTime("2016-03-15T00:00:00.000+03:00"),
-        new DateTime("2018-05-15T00:00:00.000+03:00"), "prisma", User(1, "vasyaSPB", "qwerty"))
+        new DateTime("2018-05-15T00:00:00.000+03:00"), "prisma", User("vasyaSPB", "qwerty",Some(1)))
     } yield sum
     f.futureValue shouldBe 700
   }
@@ -82,7 +86,7 @@ class DataRepositorySpec extends FlatSpec with Matchers with ScalaFutures {
       _ <- rep.put(Data(new DateTime("2018-04-15T00:00:00.000+03:00"),
         300, Some("internet"), Some("prisma"), None, None, Some(1)))
       sum <- rep.statByDate(new DateTime("2017-03-15T00:00:00.000+03:00"),
-        new DateTime("2018-04-15T00:00:00.000+03:00"), User(1, "vasyaSPB", "qwerty"))
+        new DateTime("2018-04-15T00:00:00.000+03:00"), User("vasyaSPB", "qwerty", Some(1)))
     } yield sum
     f.futureValue should contain theSameElementsAs
       Seq(Sample("2017-04", Some("food"), 400), Sample("2018-03", Some("internet"), 300),
@@ -100,7 +104,7 @@ class DataRepositorySpec extends FlatSpec with Matchers with ScalaFutures {
       _ <- rep.put(Data(new DateTime("2018-04-15T00:00:00.000+03:00"),
         300, Some("internet"), Some("prisma"), None, None, Some(1)))
       sum <- rep.statByDate(new DateTime("2016-03-15T00:00:00.000+03:00"),
-        new DateTime("2016-04-15T00:00:00.000+03:00"), User(1, "vasyaSPB", "qwerty"))
+        new DateTime("2016-04-15T00:00:00.000+03:00"), User("vasyaSPB", "qwerty", Some(1)))
     } yield sum
     f.futureValue shouldBe empty
   }
@@ -114,7 +118,7 @@ class DataRepositorySpec extends FlatSpec with Matchers with ScalaFutures {
         Some("mobile"), None, Some(LocalDate.now().toDateTimeAtStartOfDay().minusDays(10)), None, Some(1)))
       _ <- rep.put(Data(new DateTime("2018-01-15T00:00:00.000+03:00"), 1000,
         Some("credit"), None, Some(LocalDate.now().toDateTimeAtStartOfDay().plusDays(6)), None, Some(1)))
-      seq <- rep.getRemind(User(1, "vasyaSPB", "qwerty"))
+      seq <- rep.getRemind(User("vasyaSPB", "qwerty",Some(1)))
     } yield seq
     f.futureValue should contain theSameElementsAs
       Seq(RegSample(LocalDate.now().toDateTimeAtStartOfDay().plusDays(5), "internet", 300),

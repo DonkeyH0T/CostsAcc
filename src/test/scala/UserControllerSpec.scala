@@ -1,5 +1,7 @@
-import exppack.Request._
-import exppack._
+import exppack.Controllers.{AddUserController, UserController}
+import exppack.repository.UserRepository
+import exppack.domain.{Request, User}
+import exppack.domain.UserRequest.AddUser
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}
 import org.scalatest.concurrent.ScalaFutures
@@ -17,13 +19,13 @@ class UserControllerSpec  extends FlatSpec with Matchers with ScalaFutures with 
   }
 
   "AddUserController" should "check logpass in repo and return user" in new Context {
-    repo.checkAndSave _ expects ("a","b") returning Future.successful(User(1,"a","b"))
-    c(AddUser("a","b",None)).futureValue
+    repo.put _ expects User("a","b") returning Future.successful(User("a","b",Some(1)))
+    c(AddUser(User("a","b"))).futureValue
   }
 
   "UserController" should "check logpass in repo and return user" in new Context {
-    repo.userAuth _ expects ("a","b") returning Future.successful(User(1,"a","b"))
+    repo.userAuth _ expects User("a","b") returning Future.successful(User("a","b",Some(1)))
     //req.withUser _ expects (User(1,"a","b"))
-    uc("a","b",Request.Remind(None)).futureValue
+    uc(User("a","b"),Request.Remind(None)).futureValue
   }
 }
