@@ -2,9 +2,6 @@ package exppack.repository
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
-import java.time.Period
-
-import exppack.domain.{Data, RegSample, Sample, User}
 
 import exppack.domain._
 import org.joda.time._
@@ -14,12 +11,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 object DataService {
 
-  def isWithinRange(dateFrom: LocalDate, dateTo: LocalDate, date: LocalDate): Boolean
-}
-
-trait DataServiceImpl extends DataService {
   val idData: AtomicInteger = new AtomicInteger(0)
-
   def nextDataId: Int = idData.incrementAndGet
 
   def isWithinRange(dateFrom: DateTime, dateTo: DateTime, date: DateTime): Boolean = {

@@ -9,8 +9,7 @@ trait Repository[ID, T] {
 
   def all(): Future[Seq[T]]
 
-}
-//trait NewFunction {
   // def get(key: ID): Future[T]
   // def delete(key: ID): Future[Unit]
-//}
+}
+

@@ -1,5 +1,8 @@
 package exppack
 
+import exppack.Controllers.{AddUserController, RemindController, UserController}
+import exppack.repository.MemoryUserRepository
+import exppack.domain.{Data, RegSample, UserRequest}
 import org.joda.time._
 
 import scala.concurrent.Await
@@ -11,8 +14,10 @@ object MainObj extends App{
   implicit val rep = new MemoryUserRepository
   val z = new UserController
   val x = new AddUserController
-  import Request._
+  import exppack.domain.UserRequest._
 
+
+/*
   val f = for {
     a <- x(AddUser("aa","bb",None))
     b <- x(AddUser("aa","bb",None))
@@ -36,5 +41,6 @@ object MainObj extends App{
 
 println(k)
 
+*/
 
 }

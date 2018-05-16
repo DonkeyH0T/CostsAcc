@@ -6,7 +6,7 @@ import akka.http.scaladsl.unmarshalling.Unmarshaller
 import exppack.domain.{Category, Shop, User}
 
 import scala.concurrent.Future
-
+/*
 object CustomUnmarshaller {
   val toDateTime: Unmarshaller[String, DateTime] = DateTime.fromIsoDateTimeString(_: String) match {
     case Some(a) => Future.successful(a)
@@ -26,3 +26,4 @@ object CustomUnmarshaller {
   val toUser: ConstructFromTuple[(String, String), User] = (logpass: (String, String)) => User(logpass._1, logpass._2, None)
 
 }
+*/
