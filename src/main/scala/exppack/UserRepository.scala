@@ -1,12 +1,8 @@
 package exppack
 
-import java.time.LocalDate
-
 import scala.concurrent.{ExecutionContext, Future}
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
-
-import exppack.domain.User
 
 import scala.collection.JavaConverters._
 
@@ -29,7 +25,7 @@ trait UserServiceImpl extends UserService {
 
 trait UserRepository extends Repository[Int, User] with UserRepositoryUtils
 
-final class UserRepositoryClass(implicit ec: ExecutionContext) extends UserRepository with UserServiceImpl {
+final class MemoryUserRepository(implicit ec: ExecutionContext) extends UserRepository with UserServiceImpl {
 
   private[this] val storage = new ConcurrentHashMap[Int, User]()
 

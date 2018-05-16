@@ -1,23 +1,24 @@
-package exppack.domain
+package exppack
 
-import java.time.{LocalDate, Month, Year}
+import org.joda.time.DateTime
 
-trait Expense{
-  def withUser(user:Option[User]): Expense
+
+trait Expense {
+  def withUser(user: User): Expense
 }
 
-case class Data(date: LocalDate,
+case class Data(date: DateTime,
                 cost: Double,
-                category: Option[String]=None,
-                shop: Option[String] =None,
-                nextPayment: Option[LocalDate]= None,
-                id: Option[Int]=None,
-                userId: Option[Int]=None) extends Expense {
-  override def withUser(user: Option[User]): Data = user match {
-    case Some(u) => copy(userId = Some(u.id))
-  }
+                category: Option[String] = None,
+                shop: Option[String] = None,
+                nextPayment: Option[DateTime] = None,
+                id: Option[Int] = None,
+                userId: Option[Int] = None) extends Expense {
+
+  override def withUser(user: User): Data = copy(userId = Some(user.id))
+
 }
 
-case class Sample(monthYear: (Month, Year), category: Option[String], sum: BigDecimal)
+case class Sample(yearMonth: String, category: Option[String], sum: BigDecimal)
 
-case class RegSample(data: LocalDate, category: String, sum: Double)
+case class RegSample(data: DateTime, category: String, sum: Double)
