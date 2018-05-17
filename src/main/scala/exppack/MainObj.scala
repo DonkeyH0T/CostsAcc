@@ -19,7 +19,7 @@ object MainObj extends App{
   val db = Database.forConfig("db")
   val dataService = new DbUserServiceImpl(profile,db)
 
-  val f = dataService.getAll()
-
-  Await.ready(f, Duration.Inf)
+  //val f = dataService.getAll()
+  val c = dataService.signIn(User("Misha","123"))
+  Await.ready(c, Duration.Inf)
 }
