@@ -2,45 +2,24 @@ package exppack
 
 import exppack.Controllers.{AddUserController, RemindController, UserController}
 import exppack.repository.MemoryUserRepository
-import exppack.domain.{Data, RegSample, UserRequest}
+import exppack.domain.{Data, RegSample, User, UserRequest}
+import exppack.services.DbUserServiceImpl
 import org.joda.time._
-
+import slick.jdbc.{JdbcBackend, JdbcProfile, MySQLProfile}
+import slick.jdbc.JdbcBackend.Database
+import scala.concurrent.Future
+import scala.util.{Success, Failure}
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
+
 object MainObj extends App{
 
+  val profile = MySQLProfile
+  val db = Database.forConfig("db")
+  val dataService = new DbUserServiceImpl(profile,db)
 
-  implicit val rep = new MemoryUserRepository
-  val z = new UserController
-  val x = new AddUserController
-  import exppack.domain.UserRequest._
-
-
-/*
-  val f = for {
-    a <- x(AddUser("aa","bb",None))
-    b <- x(AddUser("aa","bb",None))
-  } yield {println(a,b)}
+  val f = dataService.getAll()
 
   Await.ready(f, Duration.Inf)
-
-
-  val qq = new DateTime("2018-05-20T00:00:00.000+03:00")
-  println(Days.daysBetween(qq.toLocalDate, LocalDate.now()).getDays)
-
-
-  val tmp =Data(new DateTime("2017-04-15T00:00:00.000+03:00"), 300, Some("internet"), None, Some(new DateTime("2018-05-15T00:00:00.000+03:00")), None, Some(1))
-
- val k = tmp.nextPayment match {
-    case Some(x)      if (Days.daysBetween(x.toLocalDate, LocalDate.now()).getDays) < 5 =>
-      RegSample(x, "11", tmp.cost)
-    case _ => false
-
-  }
-
-println(k)
-
-*/
-
 }
