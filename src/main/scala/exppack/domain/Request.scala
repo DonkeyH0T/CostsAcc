@@ -37,5 +37,6 @@ trait UserRequest
 object UserRequest {
 
   case class AddUser(user: User) extends UserRequest
+  case class Exists(user:User) extends UserRequest
 
 }
