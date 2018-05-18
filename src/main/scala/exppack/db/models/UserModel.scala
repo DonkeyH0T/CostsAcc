@@ -1,6 +1,6 @@
 package exppack.db.models
 
-import exppack.domain._
+import exppack.domain.User
 
 
 trait UserModel extends DatabaseModel {
