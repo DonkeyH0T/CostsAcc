@@ -1,22 +1,25 @@
 package exppack.api
-/*
+
 import akka.http.scaladsl.model.DateTime
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive1, Route}
+import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import exppack.repository.{DataRepository, UserRepository}
 import exppack.api.CustomUnmarshaller._
-import exppack.domain.{Buy, MaybeUser, Period, Request}
+import exppack.domain._
 import org.json4s.{DefaultFormats, jackson}
 import org.json4s.jackson.Serialization
 
 import scala.concurrent.ExecutionContext
 
-class HttpController(implicit val userRepository: UserRepository, implicit val dataRepository: DataRepository) {
+class HttpController(implicit val userRepository: UserRepository,
+                     implicit val dataRepository: DataRepository,
+                     implicit val ec: ExecutionContext) extends Json4sSupport{
   implicit val format: DefaultFormats.type = DefaultFormats
   implicit val serialization: Serialization.type = jackson.Serialization
 
   val withPeriod: Directive1[Period] = parameters('from.as(toDateTime), 'to.as(toDateTime)).as(Period)
-  val withUser: Directive1[MaybeUser] = parameters('login, 'password).as(MaybeUser)
+  val withUser: Directive1[User] = parameters('login, 'password).as(toUser)
   val withBuy: Directive1[Buy] = parameters(
     'date.as(toDateTime),
     'sum.as(toBigDecimal),
@@ -28,29 +31,30 @@ class HttpController(implicit val userRepository: UserRepository, implicit val d
   val routes: Route = pathPrefix("api") {
     pathPrefix("user") {
       pathPrefix("register") {
-        withUser { maybeUser: MaybeUser =>
+        withUser { user: User =>
           get {
-            // TODO: починить AddUserController!
-            complete(AddUserController(userRepository)(Request.AddUser(maybeUser.name, maybeUser.pass, None)))
+            val uc = new exppack.Controllers.AddUserController
+            complete(uc(UserRequest.AddUser(user)))
           }
         }
       } ~
         pathPrefix("exists") {
-          withUser { maybeUser: MaybeUser =>
+          withUser { user: User =>
             get {
-              complete(???)
+              val uc = new exppack.Controllers.ExistsUserController
+              complete(uc(UserRequest.Exists(user)))
             }
           }
         }
     } ~ pathPrefix("expence") {
-      withUser { maybeUser: MaybeUser =>
+      withUser { user: User =>
         withBuy { buy: Buy =>
             post {
               complete(???)
             }
         }
       } ~ pathPrefix("similar") {
-        withUser { maybeUser: MaybeUser =>
+        withUser { user: User =>
           parameters('date.as(toDateTime),'category?) {
             (date:DateTime, category:Option[String]) =>
               get {
@@ -61,7 +65,7 @@ class HttpController(implicit val userRepository: UserRepository, implicit val d
       }
     } ~ pathPrefix("stat") {
       pathPrefix("bycategory") {
-        withUser { maybeUser: MaybeUser =>
+        withUser { user: User =>
           withPeriod { (period: Period) =>
             parameter('category?) { category =>
                 get {
@@ -71,7 +75,7 @@ class HttpController(implicit val userRepository: UserRepository, implicit val d
           }
         }
       } ~ pathPrefix("byshop") {
-        withUser { maybeUser: MaybeUser =>
+        withUser { user: User =>
           withPeriod { (period:Period) =>
             parameter('shop?) { shop =>
                 get {
@@ -82,7 +86,7 @@ class HttpController(implicit val userRepository: UserRepository, implicit val d
         }
       }
     } ~ pathPrefix("notifications") {
-      withUser { maybeUser: MaybeUser =>
+      withUser { user: User =>
         withPeriod { (period:Period) =>
             get {
               complete(???)
@@ -91,4 +95,4 @@ class HttpController(implicit val userRepository: UserRepository, implicit val d
       }
     }
   }
-}*/
+}
