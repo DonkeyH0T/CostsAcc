@@ -6,6 +6,7 @@ import org.joda.time._
 import slick.jdbc.{JdbcBackend, JdbcProfile}
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait DbDataService {
 
@@ -50,7 +51,7 @@ class DbDataServiceImpl(val profile: JdbcProfile, db: JdbcBackend.Database) exte
 
   override def filterByCat(dateFrom: DateTime, dateTo: DateTime, category: String, user: User): Future[BigDecimal] =
     db.run {
-      costs.filter(x => x.shop === Option(category) && x.userId === user.id && !(x.date < dateFrom || x.date > dateTo))
+      costs.filter(x => x.category === Option(category) && x.userId === user.id && !(x.date < dateFrom || x.date > dateTo))
         .map(_.cost).sum.result.map(_.getOrElse(0))
     }
 
@@ -65,11 +66,13 @@ class DbDataServiceImpl(val profile: JdbcProfile, db: JdbcBackend.Database) exte
     val cd = LocalDate.now().toDateTimeAtStartOfDay().plusDays(5)
     db.run {
       costs.filter(x => x.userId === user.id && x.nextPayment.isDefined && x.category.isDefined)
-        .filter(_.nextPayment.get < cd)
-        .sortBy(_.nextPayment)
-        .groupBy(_.category).map { case (cat, data: Seq[Data]) => data.last }.result
+        .filter(_.nextPayment.getOrElse(new DateTime) < cd)
+        .sortBy(_.nextPayment).result
     }
-      .map { x => x.toSeq.map { y: Data => RegSample(y.nextPayment.get, y.category.get, y.cost) }
+      .map { x =>
+        x.groupBy(_.category)
+          .map { case (category, data: Seq[Data]) => data.last }.toSeq
+          .map { y: Data => RegSample(y.nextPayment.get, y.category.get, y.cost) }
       }
   }
 
