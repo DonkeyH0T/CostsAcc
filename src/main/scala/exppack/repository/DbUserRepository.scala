@@ -4,7 +4,7 @@ import exppack.domain.User
 import exppack.services.DbUserService
 import scala.concurrent.Future
 
-class DbUserRepository(dbService: DbUserService) extends UserRepository{
+class DbUserRepository(implicit dbService: DbUserService) extends UserRepository{
 
 
   override def all(): Future[Seq[User]] = dbService.getAll()
