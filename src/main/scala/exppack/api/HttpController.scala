@@ -1,19 +1,24 @@
 package exppack.api
-/*
-import akka.http.scaladsl.model.DateTime
+
+import org.joda.time.DateTime
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive1, Route}
-import exppack.repository.{DataRepository, UserRepository}
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import exppack.repository.{DataRepository, UserRepository}
 import exppack.api.CustomUnmarshaller._
-import exppack.domain.{Buy, MaybeUser, Period, Request}
+import exppack.domain._
+import exppack.Controllers._
 import org.json4s.{DefaultFormats, jackson}
 import org.json4s.jackson.Serialization
 
 import scala.concurrent.ExecutionContext
 
-class HttpController(implicit val userRepository: UserRepository,
+class HttpController(val add: AddUserController,
+                     val exists: ExistsUserController,
+                     val addExp: AddDataController,
+                     val getStat: GetStatController,
+                     val remind: RemindController,
+                     implicit val userRepository: UserRepository,
                      implicit val dataRepository: DataRepository,
                      implicit val ec: ExecutionContext) extends Json4sSupport{
   implicit val format: DefaultFormats.type = DefaultFormats
@@ -21,40 +26,38 @@ class HttpController(implicit val userRepository: UserRepository,
 
   val withPeriod: Directive1[Period] = parameters('from.as(toDateTime), 'to.as(toDateTime)).as(Period)
   val withUser: Directive1[User] = parameters('login, 'password).as(toUser)
-  val withBuy: Directive1[Buy] = parameters(
+  val withData: Directive1[Data] = parameters(
     'date.as(toDateTime),
     'sum.as(toBigDecimal),
-    'category.as(toCategory)?,
-    'shop.as(toShop)?,
-    'nextpayment.as(toDateTime)?
-  ).as(Buy)
+    'category.?,
+    'shop.?,
+    'nextpayment.as(toDateTime).?
+  ).as(toData)
 
   val routes: Route = pathPrefix("api") {
     pathPrefix("user") {
       pathPrefix("register") {
         withUser { user: User =>
           get {
-            val uc = new exppack.Controllers.AddUserController
-            complete(uc(UserRequest.AddUser(user)))
+            complete(add(UserRequest.AddUser(user)))
           }
         }
       } ~
         pathPrefix("exists") {
           withUser { user: User =>
             get {
-              val uc = new exppack.Controllers.ExistsUserController
-              complete(uc(UserRequest.Exists(user)))
+              complete(exists(UserRequest.Exists(user)))
             }
           }
         }
     } ~ pathPrefix("expence") {
       withUser { user: User =>
-        withBuy { buy: Buy =>
+        withData { buy: Data =>
             post {
-              complete(???)
+              complete(addExp(Request.AddExpense(buy).withUser(user)))
             }
         }
-      } ~ pathPrefix("similar") {
+      } /*~ pathPrefix("similar") {
         withUser { user: User =>
           parameters('date.as(toDateTime),'category?) {
             (date:DateTime, category:Option[String]) =>
@@ -63,14 +66,14 @@ class HttpController(implicit val userRepository: UserRepository,
               }
           }
         }
-      }
+      }*/
     } ~ pathPrefix("stat") {
       pathPrefix("bycategory") {
         withUser { user: User =>
           withPeriod { (period: Period) =>
-            parameter('category?) { category =>
+            parameter('category) { category =>
                 get {
-                  complete(???)
+                  complete(getStat(Request.WithCategory(period.from, period.to,category).withUser(user)))
                 }
             }
           }
@@ -78,9 +81,9 @@ class HttpController(implicit val userRepository: UserRepository,
       } ~ pathPrefix("byshop") {
         withUser { user: User =>
           withPeriod { (period:Period) =>
-            parameter('shop?) { shop =>
+            parameter('shop) { shop =>
                 get {
-                  complete(???)
+                  complete(getStat(Request.WithDateShop(period.from, period.to,shop).withUser(user)))
                 }
             }
           }
@@ -90,10 +93,10 @@ class HttpController(implicit val userRepository: UserRepository,
       withUser { user: User =>
         withPeriod { (period:Period) =>
             get {
-              complete(???)
+              complete(remind(Request.Remind().withUser(user)))
             }
         }
       }
     }
   }
-}*/
+}
