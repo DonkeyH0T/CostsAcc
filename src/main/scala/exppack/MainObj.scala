@@ -1,46 +1,40 @@
 package exppack
 
-import exppack.Controllers.{AddUserController, RemindController, UserController}
-import exppack.repository.MemoryUserRepository
-import exppack.domain.{Data, RegSample, UserRequest}
-import org.joda.time._
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
+import akka.stream.ActorMaterializer
+import exppack.Controllers._
+import exppack.repository.{DataRepository, UserRepository}
 
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-import scala.concurrent.ExecutionContext.Implicits.global
-object MainObj extends App{
+import scala.concurrent.{ExecutionContext, Future}
+object MainObj extends App {
 
+  implicit val system: ActorSystem = ActorSystem("system")
+  implicit val materializer: ActorMaterializer = ActorMaterializer()
 
-  implicit val rep = new MemoryUserRepository
-  val z = new UserController
-  val x = new AddUserController
-  import exppack.domain.UserRequest._
+  implicit val ec = ExecutionContext.global
+  implicit val userRepository = ???
+  implicit val dataRepository = ???
+  val add = new AddUserController
+  val exists = new ExistsUserController
+  val addExp = new AddDataController
+  val getStat = new GetStatController
+  val remind = new RemindController
 
+  val controller = new api.HttpController(add,exists, addExp, getStat, remind, userRepository, dataRepository, ec)
 
-/*
-  val f = for {
-    a <- x(AddUser("aa","bb",None))
-    b <- x(AddUser("aa","bb",None))
-  } yield {println(a,b)}
+  val routes =
+  /* get {
+    pathPrefix("index") {
+      getFromResource("index.html")
+    } ~ pathPrefix("js") {
+      getFromResourceDirectory("js")
+    } ~ pathPrefix("css") {
+      getFromResourceDirectory("css")
+    }
+  } ~ */
+    controller.routes
 
-  Await.ready(f, Duration.Inf)
-
-
-  val qq = new DateTime("2018-05-20T00:00:00.000+03:00")
-  println(Days.daysBetween(qq.toLocalDate, LocalDate.now()).getDays)
-
-
-  val tmp =Data(new DateTime("2017-04-15T00:00:00.000+03:00"), 300, Some("internet"), None, Some(new DateTime("2018-05-15T00:00:00.000+03:00")), None, Some(1))
-
- val k = tmp.nextPayment match {
-    case Some(x)      if (Days.daysBetween(x.toLocalDate, LocalDate.now()).getDays) < 5 =>
-      RegSample(x, "11", tmp.cost)
-    case _ => false
-
-  }
-
-println(k)
-
-*/
+  Http().bindAndHandle(routes, "localhost", 8080)
 
 }
