@@ -10,14 +10,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 object CustomUnmarshaller {
   val toDateTime: Unmarshaller[String, DateTime] = new Unmarshaller[String, DateTime] {
-
-
-    override def apply(s: String)(implicit ec: ExecutionContext, materializer: Materializer): Future[DateTime] = try {
-      Future.successful(DateTime.parse(s))
-    } catch {
-      case e: IllegalArgumentException =>
-        Future.failed(e)
-    }
+    override def apply(s: String)(implicit ec: ExecutionContext, materializer: Materializer): Future[DateTime] = Future.successful(DateTime.parse(s))
   }
 
   val toBigDecimal: Unmarshaller[String, BigDecimal] = Unmarshaller.strict[String, BigDecimal] {
