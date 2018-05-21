@@ -1,5 +1,5 @@
 package exppack.domain
 
-import akka.http.scaladsl.model.DateTime
+import org.joda.time.DateTime
 
 case class Period(from: DateTime, to: DateTime)
