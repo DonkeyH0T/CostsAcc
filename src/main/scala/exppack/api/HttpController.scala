@@ -18,6 +18,7 @@ class HttpController(val add: AddUserController,
                      val addExp: AddDataController,
                      val getStat: GetStatController,
                      val remind: RemindController,
+                     val userC: UserController,
                      implicit val userRepository: UserRepository,
                      implicit val dataRepository: DataRepository,
                      implicit val ec: ExecutionContext) extends Json4sSupport{
@@ -54,7 +55,7 @@ class HttpController(val add: AddUserController,
       withUser { user: User =>
         withData { buy: Data =>
             post {
-              complete(addExp(Request.AddExpense(buy).withUser(user)))
+              complete(userC(user, Request.AddExpense(buy)).flatMap(addExp))
             }
         }
       } /*~ pathPrefix("similar") {
@@ -73,7 +74,7 @@ class HttpController(val add: AddUserController,
           withPeriod { (period: Period) =>
             parameter('category) { category =>
                 get {
-                  complete(getStat(Request.WithCategory(period.from, period.to,category).withUser(user)))
+                  complete(userC(user, Request.WithCategory(period.from, period.to,category).flatMap(getStat)))
                 }
             }
           }
@@ -83,7 +84,7 @@ class HttpController(val add: AddUserController,
           withPeriod { (period:Period) =>
             parameter('shop) { shop =>
                 get {
-                  complete(getStat(Request.WithDateShop(period.from, period.to,shop).withUser(user)))
+                  complete(userC(user, Request.WithDateShop(period.from, period.to,shop)).flatMap(getStat))
                 }
             }
           }
@@ -91,10 +92,8 @@ class HttpController(val add: AddUserController,
       }
     } ~ pathPrefix("notifications") {
       withUser { user: User =>
-        withPeriod { (period:Period) =>
-            get {
-              complete(remind(Request.Remind().withUser(user)))
-            }
+        get {
+          complete(userC(user, Request.Remind()).flatMap(remind))
         }
       }
     }
