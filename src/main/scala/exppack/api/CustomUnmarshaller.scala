@@ -1,29 +1,28 @@
 package exppack.api
 
-import akka.http.scaladsl.model.DateTime
+import org.joda.time.DateTime
 import akka.http.scaladsl.server.util.ConstructFromTuple
 import akka.http.scaladsl.unmarshalling.Unmarshaller
-import exppack.domain.{Category, Shop, User}
+import akka.stream.Materializer
+import exppack.domain.{Data, User}
 
-import scala.concurrent.Future
-/*
+import scala.concurrent.{ExecutionContext, Future}
+
 object CustomUnmarshaller {
-  val toDateTime: Unmarshaller[String, DateTime] = DateTime.fromIsoDateTimeString(_: String) match {
-    case Some(a) => Future.successful(a)
-    // TODO: обработка ошибок парсинга дат
-    case None => Future.failed(???)
+  val toDateTime: Unmarshaller[String, DateTime] = new Unmarshaller[String, DateTime] {
+
+
+    override def apply(s: String)(implicit ec: ExecutionContext, materializer: Materializer): Future[DateTime] = try {
+      Future.successful(DateTime.parse(s))
+    } catch {
+      case e: IllegalArgumentException =>
+        Future.failed(e)
+    }
   }
 
   val toBigDecimal: Unmarshaller[String, BigDecimal] = Unmarshaller.strict[String, BigDecimal] {
     BigDecimal.exact
   }
-  val toCategory: Unmarshaller[String, Category] = Unmarshaller.strict[String, Category] {
-    Category
-  }
-  val toShop: Unmarshaller[String, Shop] = Unmarshaller.strict[String, Shop] {
-    Shop
-  }
   val toUser: ConstructFromTuple[(String, String), User] = (logpass: (String, String)) => User(logpass._1, logpass._2, None)
-
+  val toData: ConstructFromTuple[(DateTime,BigDecimal,Option[String],Option[String],Option[DateTime]), Data] = Data(_:DateTime, _:BigDecimal, _:Option[String],_:Option[String], _:Option[DateTime])
 }
-*/
