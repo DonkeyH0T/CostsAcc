@@ -7,7 +7,7 @@ import scala.concurrent.Future
 
 
 
-class DbDataRepository(dbService: DbDataService) extends DataRepository {
+class DbDataRepository(implicit dbService: DbDataService) extends DataRepository {
 
   override def all(): Future[Seq[Data]] = dbService.getAll()
 
