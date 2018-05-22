@@ -52,7 +52,7 @@ object MainObj extends App {
     }
   } ~ */
     controller.routes
-
+  Console.println("Start handling")
   Http().bindAndHandle(routes, "139.59.154.88", 8080)
 
   /*
