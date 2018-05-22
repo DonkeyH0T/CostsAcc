@@ -18,10 +18,10 @@ class HttpController(val add: AddUserController,
                      val addExp: AddDataController,
                      val getStat: GetStatController,
                      val remind: RemindController,
-                     val userC: UserController,
+                     val userC: UserController)(
                      implicit val userRepository: UserRepository,
-                     implicit val dataRepository: DataRepository,
-                     implicit val ec: ExecutionContext) extends Json4sSupport{
+                     val dataRepository: DataRepository,
+                     val ec: ExecutionContext) extends Json4sSupport{
   implicit val format: DefaultFormats.type = DefaultFormats
   implicit val serialization: Serialization.type = jackson.Serialization
 
@@ -74,7 +74,9 @@ class HttpController(val add: AddUserController,
           withPeriod { (period: Period) =>
             parameter('category) { category =>
                 get {
-                  complete(userC(user, Request.WithCategory(period.from, period.to,category).flatMap(getStat)))
+                  complete {
+                    userC(user, Request.WithCategory(period.from, period.to,category)).flatMap(getStat)
+                  }
                 }
             }
           }
