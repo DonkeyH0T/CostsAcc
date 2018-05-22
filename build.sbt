@@ -23,6 +23,8 @@ libraryDependencies ++= Seq(
 
 )
 
+libraryDependencies ~= { _.map(_.exclude("org.slf4j", "slf4j-jdk14")) }
+
 scalacOptions := Seq(
   "-encoding",
   "utf8"
