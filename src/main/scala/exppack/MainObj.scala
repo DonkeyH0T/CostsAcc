@@ -30,18 +30,16 @@ object MainObj extends App {
   implicit val dataService = new DbDataServiceImpl(profile, db)
   implicit val dbdr = new DbDataRepository
   implicit val dbur = new DbUserRepository
-  implicit val ec = ExecutionContext.global
 
   val add = new AddUserController
   val exists = new ExistsUserController
   val dc = new AddDataController
   val gsc = new GetStatController
   val rc = new RemindController
-
   val uc = new UserController
-  val dsc = new DetailedStatController
+  //val dsc = new DetailedStatController
 
-  val controller = new api.HttpController(add, exists, dc, gsc, rc, userRepository, dataRepository, ec)
+  val controller = new api.HttpController(add, exists, dc, gsc, rc, uc)
 
   val routes =
   /* get {
