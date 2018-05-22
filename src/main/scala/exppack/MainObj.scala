@@ -53,7 +53,7 @@ object MainObj extends App {
   } ~ */
     controller.routes
 
-  Http().bindAndHandle(routes, "localhost", 8080)
+  Http().bindAndHandle(routes, "139.59.154.88", 8080)
 
   /*
   val k = uc(User("John Doe", "qwerty", None), AddExpense(Data(new DateTime("2018-02-15T00:00:00.000+03:00"), 100,
