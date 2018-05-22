@@ -17,7 +17,7 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-nop" % "1.6.4",
   "com.typesafe.slick" %% "slick-hikaricp" % "3.2.3",
 
-  "ch.qos.logback" % "logback-classic" % "1.2.3",
+  //"ch.qos.logback" % "logback-classic" % "1.2.3",
 
   "mysql" %  "mysql-connector-java" % "5.1.6"
 
